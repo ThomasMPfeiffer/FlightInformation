@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1231
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FlightInformation", "FlightInformation\FlightInformation.pyproj", "{D8AA9FAE-75A7-42CB-9D53-835BF2EFE3EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D8AA9FAE-75A7-42CB-9D53-835BF2EFE3EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8AA9FAE-75A7-42CB-9D53-835BF2EFE3EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8AA9FAE-75A7-42CB-9D53-835BF2EFE3EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8AA9FAE-75A7-42CB-9D53-835BF2EFE3EE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C56D5C68-1F9F-41B5-B1DD-BFECF825ED3B}
+	EndGlobalSection
+EndGlobal
