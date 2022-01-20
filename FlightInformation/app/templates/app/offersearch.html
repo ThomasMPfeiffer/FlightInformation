@@ -1,12 +1,10 @@
-{% extends "app/layout.html" %}
-
+﻿{% extends "app/layout.html" %}
 {% block content %}
 
-
- {{prediction}} 
-<form action="" method="POST" id="form_id">
+     {{offersearch}} 
+<form action="" method="POST" id="form_offersearch">
       {% csrf_token %} 
-      <h2&>Trip Purpose Prediction</h2> 
+      <h2&>Offer search</h2> 
      <p>
          <input type="text" name="Origin" id="inputOrigin" 
             placeholder="From" required autofocus> 
@@ -18,13 +16,10 @@
       <p> 
          <input type="date" name="Departuredate" id="idDeparturedate" required> 
       </p> 
-      <p>
-         <input type="date" name="Returndate" id="idReturndate" required> 
+      <p> 
+         <input type="number" name="Amount_adults" id="idAdultamount" required> 
       </p> 
+
       <input type="Submit" name="Submit" value="Submit" />
    </form>
-<div>
-
-</div>
-
 {% endblock %}
