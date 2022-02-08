@@ -1,0 +1,23 @@
+﻿{% extends "app/layout.html" %}
+{% block content %}
+
+     {{availsearch}} 
+<form action="" method="POST" id="form_availsearch">
+      {% csrf_token %} 
+      <h2&>Availibility search</h2> 
+     <p>
+         <input type="text" name="Origin" id="inputOrigin" 
+            placeholder="From" required autofocus> 
+      </p>
+      <p>
+         <input type="text" name="Destination" id="inputDestination" 
+            placeholder="To" required>
+      </p> 
+      <p> 
+         <input type="date" name="Departuredate" id="idDeparturedate" required> 
+          Departure Date
+      </p> 
+
+      <input type="Submit" name="Submit" value="Submit" />
+   </form>
+{% endblock %}

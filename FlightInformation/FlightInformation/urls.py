@@ -18,6 +18,7 @@ urlpatterns = [
     # Examples:
     url(r'^$', app.views.home, name='home'),
     url(r'^offersearch$', app.views.offersearch, name='offersearch'),
+    url(r'^availsearch$', app.views.availsearch, name='availsearch'),
     url(r'^contact$', app.views.contact, name='contact'),
     url(r'^about$', app.views.about, name='about'),
     url(r'^login/$',

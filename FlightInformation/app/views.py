@@ -9,6 +9,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from amadeus import Client, ResponseError 
 from django.contrib import messages 
+import json
 
 amadeus = Client(client_id='In8XtAGXlpWyURmQE3FQFSyGiUC3YSAL', 
                  client_secret='xwDB70qfB4AAnMrT', 
@@ -34,18 +35,61 @@ def offersearch(request):
     kwargs = {'originLocationCode': request.POST.get('Origin'), 
             'destinationLocationCode': request.POST.get('Destination'), 
             'departureDate': request.POST.get('Departuredate'), 
-            'adults':  request.POST.get('Amount_adults')}
+            'returnDate':  request.POST.get('Returndate'),
+            'adults':  request.POST.get('Amount_adults'),
+            'travelClass':  request.POST.get('Class')}
             
     try: 
         response = amadeus.shopping.flight_offers_search.get(
         **kwargs)
-        print(response.data)
+             
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
         return render(request, 'app/offersearch.html', {}) 
     return render(request, "app/offersearch.html", {"offersearch": response})
 
+
+
+def availsearch(request):
+    kwargs = {'originLocationCode': request.POST.get('Origin'), 
+            'destinationLocationCode': request.POST.get('Destination'), 
+            'departureDate': request.POST.get('Departuredate')}
+    json_kwargs = json.dumps(kwargs)
+    teststring = """{
+    "originDestinations": [
+     {
+         "id": "1",
+         "originLocationCode": "BOS",
+         "destinationLocationCode": "MAD",
+        "departureDateTime": {
+           "date": "2022-02-14",
+           "time": "21:15:00"
+             }
+     }
+     ],
+    "travelers": [
+      {
+       "id": "1",
+       "travelerType": "ADULT"
+     }
+     ],
+    "sources": [
+      "GDS"
+     ]
+    }"""  
+    
+    testjson = json.loads(teststring)
+
+    try: 
+        response = amadeus.shopping.availability.flight_availabilities.post(
+        testjson)
+             
+    except ResponseError as error: 
+        print(error) 
+        messages.add_message(request, messages.ERROR, error) 
+        return render(request, 'app/availsearch.html', {}) 
+    return render(request, "app/availsearch.html", {"availsearch": response})
 
 
 
