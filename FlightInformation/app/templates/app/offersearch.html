@@ -4,7 +4,8 @@
      {{offersearch}} 
 <form action="" method="POST" id="form_offersearch">
       {% csrf_token %} 
-      <h2&>Offer search</h2> 
+    <div style="float:left">
+      <h1>Offer search</h1> 
      <p>
          <input type="text" name="Origin" id="inputOrigin" 
             placeholder="From" required autofocus> 
@@ -32,11 +33,19 @@
              <option value="PREMIUM_ECONOMY" >Premium Economy</option>
              <option value="BUSINESS" >Buissnes</option>
              <option value="FIRST" >First</option>
-         </select>
-
-          
+         </select>          
       </p>
-
       <input type="Submit" name="Submit" value="Submit" />
+    </div>
+    <div style="float:left">
+        <details>
+            <summary>Search Filter</summary>
+            <p>                    
+                <input type="checkbox" name="NonStopp" id="checkboxNonStopp"> 
+                Non-Stopp
+            </p>
+        </details>
+    </div>
+
    </form>
 {% endblock %}

@@ -40,50 +40,55 @@ def offersearch(request):
             'travelClass':  request.POST.get('Class')}
             
     try: 
-        response = amadeus.shopping.flight_offers_search.get(
+        offerresponse = amadeus.shopping.flight_offers_search.get(
         **kwargs)
-             
+        seatmap = {
+            "data": [
+                offerresponse.data[000]
+                ]
+            }
+       # json_seatmap = json.dump(seatmap)
+       
+        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
+        result = seatmapresponse.body    
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
         return render(request, 'app/offersearch.html', {}) 
-    return render(request, "app/offersearch.html", {"offersearch": response})
+    return render(request, "app/offersearch.html", {"offersearch": result})
 
 
 
 def availsearch(request):
-    kwargs = {'originLocationCode': request.POST.get('Origin'), 
-            'destinationLocationCode': request.POST.get('Destination'), 
-            'departureDate': request.POST.get('Departuredate')}
-    json_kwargs = json.dumps(kwargs)
-    teststring = """{
+   
+    kwargs = {
     "originDestinations": [
      {
          "id": "1",
-         "originLocationCode": "BOS",
-         "destinationLocationCode": "MAD",
-        "departureDateTime": {
-           "date": "2022-02-14",
-           "time": "21:15:00"
-             }
+         "originLocationCode": request.POST.get('Origin'),
+         "destinationLocationCode": request.POST.get('Destination'),
+         "departureDateTime": 
+         {
+           "date": request.POST.get('Departuredate'),
+         }
      }
      ],
     "travelers": [
       {
        "id": "1",
        "travelerType": "ADULT"
-     }
+      }
      ],
     "sources": [
       "GDS"
      ]
-    }"""  
+    }  
     
-    testjson = json.loads(teststring)
+    json_kwargs = json.dumps(kwargs)
 
     try: 
         response = amadeus.shopping.availability.flight_availabilities.post(
-        testjson)
+        json_kwargs)
              
     except ResponseError as error: 
         print(error) 
@@ -92,35 +97,6 @@ def availsearch(request):
     return render(request, "app/availsearch.html", {"availsearch": response})
 
 
-
-def contact(request):
-    """Renders the contact page."""
-    assert isinstance(request, HttpRequest)
-    return render(
-        request,
-        'app/contact.html',
-        {
-            'title':'Contact',
-            'message':'Your contact page.',
-            'year':datetime.now().year,
-        }
-    )
-
-
-
-
-def about(request):
-    """Renders the about page."""
-    assert isinstance(request, HttpRequest)
-    return render(
-        request,
-        'app/about.html',
-        {
-            'title':'About',
-            'message':'Your application description page.',
-            'year':datetime.now().year,
-        }
-    )
 
 
 
