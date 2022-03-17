@@ -4,48 +4,57 @@
      {{offersearch}} 
 <form action="" method="POST" id="form_offersearch">
       {% csrf_token %} 
-    <div style="float:left">
       <h1>Offer search</h1> 
+    <div>
      <p>
-         <input type="text" name="Origin" id="inputOrigin" 
-            placeholder="From" required autofocus> 
-      </p>
-      <p>
-         <input type="text" name="Destination" id="inputDestination" 
-            placeholder="To" required>
-      </p> 
-      <p> 
-         <input type="date" name="Departuredate" id="idDeparturedate" required> 
-          Departure Date
-      </p> 
-      <p> 
-         <input type="date" name="Returndate" id="idReturnedate"> 
-          Return Date
-      </p> 
-      <p> 
-         <input type="number" name="Amount_adults" id="idAdultamount" required> 
-          Pax
-      </p> 
-      <p> 
-         <select id="idClass" name="Class">
-             <option value="">Select your Travel Class</option>
-             <option value="ECONOMY" >Economy</option>
-             <option value="PREMIUM_ECONOMY" >Premium Economy</option>
-             <option value="BUSINESS" >Buissnes</option>
-             <option value="FIRST" >First</option>
-         </select>          
-      </p>
-      <input type="Submit" name="Submit" value="Submit" />
+             <input type="text" name="Origin" id="inputOrigin" 
+                placeholder="From" required autofocus> 
+          </p>
+          <p>
+             <input type="text" name="Destination" id="inputDestination" 
+                placeholder="To" required>
+          </p> 
+          <p> 
+             <input type="date" name="Departuredate" id="idDeparturedate" required> 
+              Departure Date
+          </p> 
+          <p> 
+             <input type="date" name="Returndate" id="idReturnedate" required> 
+              Return Date
+          </p> 
+          <p> 
+             <input type="number" name="Amount_adults" id="idAdultamount" required> 
+              Pax
+          </p> 
+          <p> 
+             <select id="idClass" name="Class" required>
+                 <option value="">Select your Travel Class</option>
+                 <option value="ECONOMY" >Economy</option>
+                 <option value="PREMIUM_ECONOMY" >Premium Economy</option>
+                 <option value="BUSINESS" >Buissnes</option>
+                 <option value="FIRST" >First</option>
+             </select>          
+          </p>
+          
+            <details>
+                <summary>Search Filter</summary>
+                <p>                    
+                    <input type="checkbox" name="NonStopp" id="checkboxNonStopp"> 
+                    Non-Stopp
+                </p>
+                <p>                    
+                    <input type="text" name="IncludeAirlines" id="includeAir"> 
+                    Include Airlines
+                </p>
+                <p>                    
+                    <input type="text" name="ExcludeAirlines" id="excludeAir"> 
+                    Exclude Airlines
+                </p>
+            </details>
+        <br/>
+        <input type="Submit" name="Submit" value="Submit"/>
     </div>
-    <div style="float:left">
-        <details>
-            <summary>Search Filter</summary>
-            <p>                    
-                <input type="checkbox" name="NonStopp" id="checkboxNonStopp"> 
-                Non-Stopp
-            </p>
-        </details>
-    </div>
-
    </form>
+
+
 {% endblock %}

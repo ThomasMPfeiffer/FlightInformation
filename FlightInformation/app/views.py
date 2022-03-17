@@ -38,29 +38,37 @@ def offersearch(request):
             'returnDate':  request.POST.get('Returndate'),
             'adults':  request.POST.get('Amount_adults'),
             'travelClass':  request.POST.get('Class')}
-            
+
+    if request.POST.get('NonStopp'):
+        kwargs= {'nonStop': 'true', **kwargs}  
+    if  request.POST.get('IncludeAirlines'):
+        kwargs= {'includedAirlineCodes': request.POST.get('IncludeAirlines'), **kwargs} 
+    if request.POST.get('ExcludeAirlines'):
+        kwargs= {'ExcludeAirlines': request.POST.get('ExcludeAirlines'), **kwargs} 
+
     try: 
         offerresponse = amadeus.shopping.flight_offers_search.get(
-        **kwargs)
-        seatmap = {
-            "data": [
-                offerresponse.data[000]
-                ]
-            }
+        **kwargs)        
+#        seatmap = {
+#            "data": [
+#                offerresponse.data[000]
+#                ]
+#            }
        # json_seatmap = json.dump(seatmap)
        
-        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
-        result = seatmapresponse.body    
+#        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
+#        seatmapresult = seatmapresponse.body    
+        offerresult = offerresponse.body;
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
         return render(request, 'app/offersearch.html', {}) 
-    return render(request, "app/offersearch.html", {"offersearch": result})
+    return render(request, "app/offersearch.html", {"offersearch": offerresult})
 
 
 
 def availsearch(request):
-   
+   #Searchfilter fehlen
     kwargs = {
     "originDestinations": [
      {
@@ -89,12 +97,13 @@ def availsearch(request):
     try: 
         response = amadeus.shopping.availability.flight_availabilities.post(
         json_kwargs)
+        responsehtml = response.body;
              
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
         return render(request, 'app/availsearch.html', {}) 
-    return render(request, "app/availsearch.html", {"availsearch": response})
+    return render(request, "app/availsearch.html", {"availsearch": responsehtml})
 
 
 

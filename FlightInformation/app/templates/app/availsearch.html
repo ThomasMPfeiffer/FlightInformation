@@ -19,6 +19,41 @@
           Departure Date
       </p> 
 
+      <details>
+        <summary>Search Filter</summary> {#Nonstop noch einfügen mit max numbers of connections#}
+          <div style="float: left">
+            Travel Class
+            <p>                    
+                <input type="checkbox" name="Economy" id="economy"> 
+                Economy
+            </p>
+
+            <p>                    
+                <input type="checkbox" name="PremEconomy" id="premEconomy"> 
+                Premium Economy
+            </p>
+
+            <p>                    
+                <input type="checkbox" name="Buisness" id="buisness"> 
+                Buisness
+            </p>
+
+            <p>                    
+                <input type="checkbox" name="First" id="first"> 
+                First
+            </p>
+          </div>
+        <p>                    
+            <input type="text" name="IncludeAirlines" id="includeAir"> 
+            Include Airlines
+        </p>
+        <p>                    
+            <input type="text" name="ExcludeAirlines" id="excludeAir"> 
+            Exclude Airlines
+        </p>
+      </details>
+      <br/>
+
       <input type="Submit" name="Submit" value="Submit" />
    </form>
 {% endblock %}
