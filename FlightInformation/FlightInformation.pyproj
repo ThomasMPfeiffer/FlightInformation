@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\templates\app\availsearch.html" />
+    <Content Include="app\templates\app\flightsearch.html" />
     <Content Include="app\templates\app\offersearch.html" />
     <Content Include="requirements.txt" />
     <Content Include="db.sqlite3" />

@@ -68,44 +68,106 @@ def offersearch(request):
 
 
 def availsearch(request):
-   #Searchfilter fehlen
-    kwargs = {
-    "originDestinations": [
-     {
-         "id": "1",
-         "originLocationCode": request.POST.get('Origin'),
-         "destinationLocationCode": request.POST.get('Destination'),
-         "departureDateTime": 
-         {
-           "date": request.POST.get('Departuredate'),
-         }
-     }
-     ],
-    "travelers": [
-      {
-       "id": "1",
-       "travelerType": "ADULT"
-      }
-     ],
-    "sources": [
-      "GDS"
-     ]
-    }  
+
+    #dynamic json creation
+
+    apidata= {}
+    originDestinations = [{}]
+    departureDateTime = {}
+    originDestinations[0]['id'] = '1'
+    originDestinations[0]['originLocationCode'] = request.POST.get('Origin')
+    originDestinations[0]['destinationLocationCode'] = request.POST.get('Destination')
+    departureDateTime['date'] = request.POST.get('Departuredate')
+    originDestinations[0]['departureDateTime'] = departureDateTime
+    apidata['originDestinations'] = originDestinations
     
-    json_kwargs = json.dumps(kwargs)
+    travelers = [{}]
+    travelers[0]['id'] = '1'
+    travelers[0]['travelerType'] = 'ADULT'
+    apidata['travelers'] = travelers
+
+    sources = ['GDS']
+    apidata['sources'] = sources
+
+    searchCriteria = {}
+    flightFilters = {}
+    carrierRestrictions = {}
+    connectionRestriction = {}
+    cabinRestrictions = [{}]
+
+    if request.POST.get('Economy'):
+        cabinRestrictions[0]['cabin'] = 'ECONOMY'
+        cabinRestrictions[0]['originDestinationIds']=[1]
+        flightFilters['cabinRestrictions']=cabinRestrictions
+    if request.POST.get('PremEconomy'):
+        cabinRestrictions[0]['cabin']='PREMIUM_ECONOMY'
+        cabinRestrictions[0]['originDestinationIds']=[1]
+        flightFilters[0]['cabinRestrictions']=cabinRestrictions
+    if request.POST.get('Buisness'):
+        cabinRestrictions[0]['cabin']='BUSINESS'
+        cabinRestrictions[0]['originDestinationIds']=[1]
+        flightFilters['cabinRestrictions']=cabinRestrictions
+    if request.POST.get('First'):
+        cabinRestrictions[0]['cabin']='FIRST'
+        cabinRestrictions[0]['originDestinationIds']=[1]
+        flightFilters['cabinRestrictions']=cabinRestrictions
+
+
+    if request.POST.get('IncludedConnectionPoints'):
+        includedConnectionPoints = request.POST.get('IncludedConnectionPoints').split(",")
+        originDestinations[0]['includedConnectionPoints'] = includedConnectionPoints
+    if  request.POST.get('ExcludedConnectionPoints'):
+        excludedConnectionPoints = request.POST.get('ExcludedConnectionPoints').split(",")
+        originDestinations[0]['excludedConnectionPoints'] = excludedConnectionPoints
+
+    if request.POST.get('IncludeAirlines'):
+        includedCarrierCodes = request.POST.get('IncludeAirlines').split(",")
+        carrierRestrictions['includedCarrierCodes'] = includedCarrierCodes
+        flightFilters['carrierRestrictions'] = carrierRestrictions
+        
+    if  request.POST.get('ExcludeAirlines'):
+        excludedCarrierCodes = request.POST.get('ExcludeAirlines').split(",")
+        carrierRestrictions['excludedCarrierCodes'] = excludedCarrierCodes
+        flightFilters['carrierRestrictions']=carrierRestrictions
+
+    if  request.POST.get('MaxStops'):
+        maxNumberOfConnections = request.POST.get('MaxStops')
+        connectionRestriction['maxNumberOfConnections'] = maxNumberOfConnections
+        flightFilters['connectionRestriction'] = connectionRestriction
+
+    searchCriteria['flightFilters']=flightFilters
+    apidata['searchCriteria']= searchCriteria
+
+    
+    json_apidata = json.dumps(apidata)
 
     try: 
         response = amadeus.shopping.availability.flight_availabilities.post(
-        json_kwargs)
+        json_apidata)
         responsehtml = response.body;
              
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
-        return render(request, 'app/availsearch.html', {}) 
-    return render(request, "app/availsearch.html", {"availsearch": responsehtml})
+      #  return render(request, 'app/availsearch.html', {}) 
+    return render(request, "app/availsearch.html", {"availsearch": json_apidata})
 
 
+def flightsearch(request): 
+    kwargs = {'carrierCode': request.POST.get('CarrierCode'), 
+            'flightNumber': request.POST.get('FlightNumver'), 
+            'scheduledDepartureDate': request.POST.get('ScheduledDepartureDate')}
+
+    try: 
+        statusresponse = amadeus.schedule.flights.get(
+        **kwargs) 
+        
+        statusresult = statusresponse.body;
+    except ResponseError as error: 
+        print(error) 
+        messages.add_message(request, messages.ERROR, error) 
+        return render(request, 'app/flightsearch.html', {}) 
+    return render(request, "app/flightsearch.html", {"flightsearch": statusresult})
 
 
 

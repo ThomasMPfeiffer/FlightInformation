@@ -1,0 +1,27 @@
+{% extends "app/layout.html" %}
+{% block content %}
+
+     {{flightsearch}} 
+<form action="" method="POST" id="form_offersearch">
+      {% csrf_token %} 
+      <h1>On-Demand Flight Status</h1> 
+    <div>
+     <p>
+             <input type="text" name="CarrierCode" id="carrierCode" 
+                placeholder="Carrier Code" required autofocus> 
+          </p>
+          <p>
+             <input type="text" name="FlightNumber" id="flightNumber" 
+                placeholder="Flight Number" required>
+          </p> 
+          <p> 
+             <input type="date" name="ScheduledDepartureDate" id="scheduledDepartureDate" required> 
+              Scheduled Departure Date
+          </p> 
+                              
+        <input type="Submit" name="Submit" value="Submit"/>
+    </div>
+   </form>
+
+
+{% endblock %}
