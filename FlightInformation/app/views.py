@@ -9,6 +9,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from amadeus import Client, ResponseError 
 from django.contrib import messages 
+from .forms import *
 import json
 
 amadeus = Client(client_id='In8XtAGXlpWyURmQE3FQFSyGiUC3YSAL', 
@@ -44,11 +45,12 @@ def offersearch(request):
     if  request.POST.get('IncludeAirlines'):
         kwargs= {'includedAirlineCodes': request.POST.get('IncludeAirlines'), **kwargs} 
     if request.POST.get('ExcludeAirlines'):
-        kwargs= {'ExcludeAirlines': request.POST.get('ExcludeAirlines'), **kwargs} 
+        kwargs= {'excludedAirlineCodes': request.POST.get('ExcludeAirlines'), **kwargs} 
 
     try: 
         offerresponse = amadeus.shopping.flight_offers_search.get(
-        **kwargs)        
+        **kwargs)    
+        #form = OfferserchResult(request.POST)
 #        seatmap = {
 #            "data": [
 #                offerresponse.data[000]
@@ -57,13 +59,55 @@ def offersearch(request):
        # json_seatmap = json.dump(seatmap)
        
 #        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
-#        seatmapresult = seatmapresponse.body    
-        offerresult = offerresponse.body;
+#        seatmapresult = seatmapresponse.body  
+
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
         return render(request, 'app/offersearch.html', {}) 
-    return render(request, "app/offersearch.html", {"offersearch": offerresult})
+
+    #list with all the offers given to the formset
+    offers = []
+
+    
+    for offer in offerresponse.data: 
+        duration = offer['itineraries'][0]['duration']
+        departureat = offer['itineraries'][0]['segments'][0]['departure']['at']
+        departureiatacode = offer['itineraries'][0]['segments'][0]['departure']['iataCode']
+        arrivalat = offer['itineraries'][0]['segments'][0]['arrival']['at']
+        arrivaliatacode = offer['itineraries'][0]['segments'][0]['arrival']['iataCode']
+        numberOfStops = offer['itineraries'][0]['segments'][0]['numberOfStops']
+        carriercode = offer['itineraries'][0]['segments'][0]['carrierCode']
+        flightnumber = offer['itineraries'][0]['segments'][0]['number']
+
+        #flight = {'duration':  duration, 'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber}
+
+        durationRet= offer['itineraries'][1]['duration']
+        departureatRet = offer['itineraries'][1]['segments'][0]['departure']['at']
+        departureiatacodeRet = offer['itineraries'][1]['segments'][0]['departure']['iataCode']
+        arrivalatRet = offer['itineraries'][1]['segments'][0]['arrival']['at']
+        arrivaliatacodeRet = offer['itineraries'][1]['segments'][0]['arrival']['iataCode']
+        numberOfStopsRet = offer['itineraries'][1]['segments'][0]['numberOfStops']
+        carriercodeRet = offer['itineraries'][1]['segments'][0]['carrierCode']
+        flightnumberRet = offer['itineraries'][1]['segments'][0]['number']
+
+        #returnflight = {'durationret':  durationRet, 'departureret': departureatRet, 'departureiataCoderet': departureiatacodeRet, 'arrivalatret': arrivalatRet, 'arrivaliataCoderet': arrivaliatacodeRet, 'stopsret': numberOfStopsRet, 'carrierCoderet': carriercodeRet, 'flightnumberret': flightnumberRet}
+
+        #price = {'price':offer['price']['total'],'currency': offer['price']['currency']}
+        offer = {
+            'duration':  duration, 'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber,
+            'durationret':  durationRet, 'departureret': departureatRet, 'departureiataCoderet': departureiatacodeRet, 'arrivalatret': arrivalatRet, 'arrivaliataCoderet': arrivaliatacodeRet, 'stopsret': numberOfStopsRet, 'carrierCoderet': carriercodeRet, 'flightnumberret': flightnumberRet,
+            'price':offer['price']['total'],'currency': offer['price']['currency']
+            }
+
+        offers.append(offer)
+        
+    OffersearchResultFormSet = formset_factory(OfferseachResult, extra = 0)  
+     
+    offerformset = OffersearchResultFormSet(initial = offers)
+
+    return render(request, "app/offersearch.html", {'offerformset': offerformset})
+
 
 
 
@@ -153,20 +197,26 @@ def availsearch(request):
     return render(request, "app/availsearch.html", {"availsearch": json_apidata})
 
 
-def flightsearch(request): 
-    kwargs = {'carrierCode': request.POST.get('CarrierCode'), 
-            'flightNumber': request.POST.get('FlightNumver'), 
-            'scheduledDepartureDate': request.POST.get('ScheduledDepartureDate')}
+def flightsearch(request):
+    flightnumber =  request.POST.get('Flightnumber')
+    if flightnumber:
+        carrierCode = flightnumber[:2]
+        number = flightnumber[2:]
+        kwargs = {'carrierCode': carrierCode, 
+                'flightNumber': number, 
+                'scheduledDepartureDate': request.POST.get('ScheduledDepartureDate')}
 
-    try: 
-        statusresponse = amadeus.schedule.flights.get(
-        **kwargs) 
+        try: 
+            statusresponse = amadeus.schedule.flights.get(
+            **kwargs) 
         
-        statusresult = statusresponse.body;
-    except ResponseError as error: 
-        print(error) 
-        messages.add_message(request, messages.ERROR, error) 
-        return render(request, 'app/flightsearch.html', {}) 
+            statusresult = statusresponse.body;
+        except ResponseError as error: 
+            print(error) 
+            messages.add_message(request, messages.ERROR, error) 
+            return render(request, 'app/flightsearch.html', {}) 
+    else:
+         return render(request, 'app/flightsearch.html', {}) 
     return render(request, "app/flightsearch.html", {"flightsearch": statusresult})
 
 

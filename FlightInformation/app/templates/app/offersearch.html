@@ -55,6 +55,15 @@
         <input type="Submit" name="Submit" value="Submit"/>
     </div>
    </form>
+ 
+        {% for offer in offerformset %}
+            <h4>Offernumber: {{forloop.counter}}</h4>
+            <table>                         
+            {{offer.as_table}}
+            </table>   
+            <br /><br /><br />
+        {% endfor %}
+
 
 
 {% endblock %}
