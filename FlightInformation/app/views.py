@@ -68,47 +68,62 @@ def offersearch(request):
 
     #list with all the offers given to the formset
     offers = []
+ 
+    for offer in offerresponse.data:
+
+         #flight
+        segments = []
+        flights=len(offer['itineraries'][0]['segments'])
+        flightsret= len(offer['itineraries'][1]['segments'])
+        for segment in range(flights):             
+            departureat = offer['itineraries'][0]['segments'][segment]['departure']['at']
+            departureiatacode = offer['itineraries'][0]['segments'][segment]['departure']['iataCode']
+            arrivalat = offer['itineraries'][0]['segments'][segment]['arrival']['at']
+            arrivaliatacode = offer['itineraries'][0]['segments'][segment]['arrival']['iataCode']
+            numberOfStops = offer['itineraries'][0]['segments'][segment]['numberOfStops']
+            carriercode = offer['itineraries'][0]['segments'][segment]['carrierCode']
+            flightnumber = offer['itineraries'][0]['segments'][segment]['number']
+
+            segment = {'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber}
+            segments.append(segment)
+
+        segmentsFormSetFlight = segments_FormSet(initial = segments)
+
+        #returnflight
+        segmentsret = []
+
+        for segment in range(flightsret):     
+            departureatRet = offer['itineraries'][1]['segments'][segment]['departure']['at']
+            departureiatacodeRet = offer['itineraries'][1]['segments'][segment]['departure']['iataCode']
+            arrivalatRet = offer['itineraries'][1]['segments'][segment]['arrival']['at']
+            arrivaliatacodeRet = offer['itineraries'][1]['segments'][segment]['arrival']['iataCode']
+            numberOfStopsRet = offer['itineraries'][1]['segments'][segment]['numberOfStops']
+            carriercodeRet = offer['itineraries'][1]['segments'][segment]['carrierCode']
+            flightnumberRet = offer['itineraries'][1]['segments'][segment]['number']
+
+            returnsegment = {'departure': departureatRet, 'departureiataCode': departureiatacodeRet, 'arrivalat': arrivalatRet, 'arrivaliataCode': arrivaliatacodeRet, 'stops': numberOfStopsRet, 'carrierCode': carriercodeRet, 'flightnumber': flightnumberRet}
+            segmentsret.append(returnsegment)
+        
+        segmentsFormSetRet = segments_FormSet(initial = segmentsret)
+
+
+        duration = offer['itineraries'][0]['duration']
+        durationRet= offer['itineraries'][1]['duration']
+        price = {'price':offer['price']['total'],'currency': offer['price']['currency']}
+
+        singleoffer = {'Duration':duration, 'Flight segments':segmentsFormSetFlight, 'Returnflight duration': durationRet, 'Returnflight segments': segmentsFormSetRet}
+        singleoffer.update(price)
+
+        offers.append(singleoffer)
+        
+   # OffersearchResultFormSet = formset_factory(Offersearch_Offer, extra = 0)  
+     
+   # offerformset = OffersearchResultFormSet(initial = offers)
+
+    return render(request, "app/offersearch.html", {'offers': offers})
+
 
     
-    for offer in offerresponse.data: 
-        duration = offer['itineraries'][0]['duration']
-        departureat = offer['itineraries'][0]['segments'][0]['departure']['at']
-        departureiatacode = offer['itineraries'][0]['segments'][0]['departure']['iataCode']
-        arrivalat = offer['itineraries'][0]['segments'][0]['arrival']['at']
-        arrivaliatacode = offer['itineraries'][0]['segments'][0]['arrival']['iataCode']
-        numberOfStops = offer['itineraries'][0]['segments'][0]['numberOfStops']
-        carriercode = offer['itineraries'][0]['segments'][0]['carrierCode']
-        flightnumber = offer['itineraries'][0]['segments'][0]['number']
-
-        #flight = {'duration':  duration, 'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber}
-
-        durationRet= offer['itineraries'][1]['duration']
-        departureatRet = offer['itineraries'][1]['segments'][0]['departure']['at']
-        departureiatacodeRet = offer['itineraries'][1]['segments'][0]['departure']['iataCode']
-        arrivalatRet = offer['itineraries'][1]['segments'][0]['arrival']['at']
-        arrivaliatacodeRet = offer['itineraries'][1]['segments'][0]['arrival']['iataCode']
-        numberOfStopsRet = offer['itineraries'][1]['segments'][0]['numberOfStops']
-        carriercodeRet = offer['itineraries'][1]['segments'][0]['carrierCode']
-        flightnumberRet = offer['itineraries'][1]['segments'][0]['number']
-
-        #returnflight = {'durationret':  durationRet, 'departureret': departureatRet, 'departureiataCoderet': departureiatacodeRet, 'arrivalatret': arrivalatRet, 'arrivaliataCoderet': arrivaliatacodeRet, 'stopsret': numberOfStopsRet, 'carrierCoderet': carriercodeRet, 'flightnumberret': flightnumberRet}
-
-        #price = {'price':offer['price']['total'],'currency': offer['price']['currency']}
-        offer = {
-            'duration':  duration, 'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber,
-            'durationret':  durationRet, 'departureret': departureatRet, 'departureiataCoderet': departureiatacodeRet, 'arrivalatret': arrivalatRet, 'arrivaliataCoderet': arrivaliatacodeRet, 'stopsret': numberOfStopsRet, 'carrierCoderet': carriercodeRet, 'flightnumberret': flightnumberRet,
-            'price':offer['price']['total'],'currency': offer['price']['currency']
-            }
-
-        offers.append(offer)
-        
-    OffersearchResultFormSet = formset_factory(OfferseachResult, extra = 0)  
-     
-    offerformset = OffersearchResultFormSet(initial = offers)
-
-    return render(request, "app/offersearch.html", {'offerformset': offerformset})
-
-
 
 
 def availsearch(request):
@@ -193,8 +208,8 @@ def availsearch(request):
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
-      #  return render(request, 'app/availsearch.html', {}) 
-    return render(request, "app/availsearch.html", {"availsearch": json_apidata})
+        return render(request, 'app/availsearch.html', {}) 
+    return render(request, "app/availsearch.html", {"availsearch": responsehtml})
 
 
 def flightsearch(request):
@@ -210,14 +225,20 @@ def flightsearch(request):
             statusresponse = amadeus.schedule.flights.get(
             **kwargs) 
         
-            statusresult = statusresponse.body;
         except ResponseError as error: 
             print(error) 
             messages.add_message(request, messages.ERROR, error) 
             return render(request, 'app/flightsearch.html', {}) 
+
+   # flights = []
+   # for flight in statusresponse.data:
+       # flight = []
+
+
+
     else:
          return render(request, 'app/flightsearch.html', {}) 
-    return render(request, "app/flightsearch.html", {"flightsearch": statusresult})
+    return render(request, "app/flightsearch.html", {"flightsearch": statusresponse.data})
 
 
 

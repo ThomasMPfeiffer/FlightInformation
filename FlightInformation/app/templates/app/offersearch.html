@@ -1,7 +1,7 @@
 ﻿{% extends "app/layout.html" %}
 {% block content %}
 
-     {{offersearch}} 
+
 <form action="" method="POST" id="form_offersearch">
       {% csrf_token %} 
       <h1>Offer search</h1> 
@@ -55,12 +55,22 @@
         <input type="Submit" name="Submit" value="Submit"/>
     </div>
    </form>
- 
-        {% for offer in offerformset %}
+  {# Frontend designer nutzen BSP: Storybook  #}
+        {% for offer in offers %}
             <h4>Offernumber: {{forloop.counter}}</h4>
-            <table>                         
-            {{offer.as_table}}
-            </table>   
+            <table class="results">
+                <tr>
+                    {% for key in offer.keys %}
+                    <th>{{key}}</th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    {% for value in offer.values %}
+                        <td><table>{{value}}</table></td>                         
+                    {% endfor %}
+                </tr>
+                           
+            </table>  
             <br /><br /><br />
         {% endfor %}
 

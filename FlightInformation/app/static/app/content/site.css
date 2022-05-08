@@ -40,3 +40,14 @@ input[type="checkbox"].input-validation-error {
 .validation-summary-valid {
     display: none;
 }
+
+.results {
+    width: 100%;
+    border: 1px solid;
+    
+}
+
+table, td, th {
+    border: 1px solid;
+    padding: 10px;
+}
