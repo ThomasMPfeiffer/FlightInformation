@@ -16,4 +16,5 @@ urlpatterns = [
     url(r'^offersearch$', app.views.offersearch, name='offersearch'),
     url(r'^availsearch$', app.views.availsearch, name='availsearch'),
     url(r'^flightsearch$', app.views.flightsearch, name='flightsearch'),
+    url(r'^seatmap$', app.views.seatmap, name='seatmap'),
 ]

@@ -39,6 +39,7 @@ segments_FormSet = formset_factory(Offersearch_Segment, extra = 0)
 
 class FlightSearch_flightpoints(forms.Form):
     iataCode = forms.CharField(disabled = True)
+    timingValue = forms.CharField(disabled = True)
 
 flightpoints_FormSet = formset_factory(FlightSearch_flightpoints, extra = 0)
 

@@ -50,16 +50,15 @@ def offersearch(request):
     try: 
         offerresponse = amadeus.shopping.flight_offers_search.get(
         **kwargs)    
-        #form = OfferserchResult(request.POST)
-#        seatmap = {
-#            "data": [
-#                offerresponse.data[000]
-#                ]
-#            }
-       # json_seatmap = json.dump(seatmap)
+        seatmap = {
+           "data": [
+               offerresponse.data[00]
+               ]
+            }
+        json_seatmap = json.dumps(seatmap)
        
-#        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
-#        seatmapresult = seatmapresponse.body  
+        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
+        seatmapresult = seatmapresponse.body  
 
     except ResponseError as error: 
         print(error) 
@@ -204,12 +203,41 @@ def availsearch(request):
         response = amadeus.shopping.availability.flight_availabilities.post(
         json_apidata)
         responsehtml = response.body;
+        responsejson = json.loads(responsehtml)
              
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
-        return render(request, 'app/availsearch.html', {}) 
-    return render(request, "app/availsearch.html", {"availsearch": responsehtml})
+        return render(request, 'app/availsearch.html', {})
+    
+
+    flights = []
+    if 'data' in responsejson:       
+
+        
+        
+        flightslen = len(responsejson['data'])
+        for flight in range(flightslen):
+            flightstring = ""
+            segments= len(responsejson['data'][flight]['segments'])
+            segmentslist = []
+            for segment in range(segments):
+                carrierCode = responsejson['data'][flight]['segments'][segment]['carrierCode']
+                flightNumber = responsejson['data'][flight]['segments'][segment]['number']
+                iataCodeDep = responsejson['data'][flight]['segments'][segment]['departure']['iataCode']
+                iataCodeArrial = responsejson['data'][flight]['segments'][segment]['arrival']['iataCode']
+                flightstring = carrierCode + flightNumber + " " + iataCodeDep + "-" + iataCodeArrial + " "  #Create Outputstring First Part               
+                bookableClasses = len(responsejson['data'][flight]['segments'][segment]['availabilityClasses'])
+                for bookableClass in range(bookableClasses):
+                    seatclass = responsejson['data'][flight]['segments'][segment]['availabilityClasses'][bookableClass]['class']
+                    numberOfBookableSeats = responsejson['data'][flight]['segments'][segment]['availabilityClasses'][bookableClass]['numberOfBookableSeats']
+                    flightstring += (seatclass + str(numberOfBookableSeats) + " ")
+                segmentslist.append(flightstring)
+            flights.append(segmentslist)
+    else:
+        flights.append("There are no Flights available")
+
+    return render(request, "app/availsearch.html", {"flights": flights})
 
 
 def flightsearch(request):
@@ -218,7 +246,7 @@ def flightsearch(request):
         carrierCode = flightnumber[:2]
         number = flightnumber[2:]
         kwargs = {'carrierCode': carrierCode, 
-                'flightNumber': number, 
+                'flightNumber': int(number), 
                 'scheduledDepartureDate': request.POST.get('ScheduledDepartureDate')}
 
         try: 
@@ -230,20 +258,40 @@ def flightsearch(request):
             messages.add_message(request, messages.ERROR, error) 
             return render(request, 'app/flightsearch.html', {}) 
 
-   # flights = []
-   # for flight in statusresponse.data:
-       # flight = []
+        flights = []
+        for dataset in statusresponse.data:            
+            scheduledDepartureDate = dataset['scheduledDepartureDate']
+            carrierCode = dataset['flightDesignator']['carrierCode']
+            flightNumber = dataset['flightDesignator']['flightNumber']
 
+            amountflightPoints = len(dataset['flightPoints'])
+            flightpoints = []
+            for flightpoint in range(amountflightPoints):
+                iataCode = dataset['flightPoints'][flightpoint]['iataCode']
+                if flightpoint == 0:
+                    timingValue = dataset['flightPoints'][flightpoint]['departure']['timings'][0]['value']  
+                if flightpoint == 1:
+                    timingValue = dataset['flightPoints'][flightpoint]['arrival']['timings'][0]['value']  
+                #timings ist eine Liste. Überprüfen, ob hier ggf mehrere Timings möglich sind und sind es immer zwei Flightpoints?? kann arrival und departure 0 und 1 sein?
 
+                singleflightpoint ={'iataCode':iataCode, 'timingValue':timingValue}
+                flightpoints.append(singleflightpoint)
 
+            flightpointsFormSet = flightpoints_FormSet(initial = flightpoints)
+            flight = {'scheduledDepartureDate':scheduledDepartureDate, 'carrierCode':carrierCode, 'flightNumber':flightNumber, 'flightpoints':flightpointsFormSet}
+            flights.append(flight)
+
+        if len(flights)==0:
+           flights = "There are no flights available" 
     else:
          return render(request, 'app/flightsearch.html', {}) 
-    return render(request, "app/flightsearch.html", {"flightsearch": statusresponse.data})
+    return render(request, "app/flightsearch.html", {"flights": flights})
 
 
+def seatmap(request):
 
-
-
+        return render(request, "app/seatmap.html")
+ 
 
 
 

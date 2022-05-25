@@ -68,4 +68,21 @@
 
       <input type="Submit" name="Submit" value="Submit" />
    </form>
+
+    {% for flight in flights %}
+            <h4>{{forloop.counter}}.</h4>
+            <table class="results">
+                
+                {% for segment in flight %}
+                    <tr>
+                        <td>
+                         {{segment}}
+                        </td>
+                    </tr>
+                {% endfor %}
+                                          
+            </table>  
+            <br />
+     {% endfor %}
+
 {% endblock %}

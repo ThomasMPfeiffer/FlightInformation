@@ -19,5 +19,24 @@
     </div>
    </form>
 
+<br/><br/><br/>
+{#travelpoints trennen in flight status#}
+        {% for flight in flights %}
+            <h4>Flight: {{forloop.counter}}</h4>
+            <table class="results">
+                <tr>
+                    {% for key in flight.keys %}
+                    <th>{{key}}</th>
+                    {% endfor %}
+                </tr>
+                <tr>
+                    {% for value in flight.values %}
+                        <td><table>{{value}}</table></td>                         
+                    {% endfor %}
+                </tr>
+                           
+            </table>  
+            <br /><br /><br />
+        {% endfor %}
 
 {% endblock %}

@@ -40,7 +40,7 @@
                 <summary>Search Filter</summary>
                 <p>                    
                     <input type="checkbox" name="NonStopp" id="checkboxNonStopp"> 
-                    Non-Stopp
+                    Non-Stop
                 </p>
                 <p>                    
                     <input type="text" name="IncludeAirlines" id="includeAir"> 
@@ -74,6 +74,17 @@
             <br /><br /><br />
         {% endfor %}
 
+    <script language="javascript" type="text/javascript">
+    <!--
+    function popitup(url) {
+        newwindow=window.open(url,'{{title}}','height=200,width=150');
+        if (window.focus) {newwindow.focus()}
+        return false;
+    }
 
+    // -->
+    </script>
+
+    <a href="seatmap.html" onclick="return popitup('/seatmap')">Link to seatmap</a>
 
 {% endblock %}
