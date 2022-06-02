@@ -2,6 +2,8 @@
 Definition of views.
 """
 
+#wichtig!!! überall noch Abfrage einbauen, ob überhaupt Übergabeparameter bezüglich des API-Request in der Restuest message stehen!!
+
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.template import RequestContext
@@ -37,33 +39,27 @@ def offersearch(request):
             'destinationLocationCode': request.POST.get('Destination'), 
             'departureDate': request.POST.get('Departuredate'), 
             'returnDate':  request.POST.get('Returndate'),
-            'adults':  request.POST.get('Amount_adults'),
-            'travelClass':  request.POST.get('Class')}
+            'adults':  request.POST.get('Amount_adults')}
 
     if request.POST.get('NonStopp'):
         kwargs= {'nonStop': 'true', **kwargs}  
     if  request.POST.get('IncludeAirlines'):
         kwargs= {'includedAirlineCodes': request.POST.get('IncludeAirlines'), **kwargs} 
     if request.POST.get('ExcludeAirlines'):
-        kwargs= {'excludedAirlineCodes': request.POST.get('ExcludeAirlines'), **kwargs} 
+        kwargs= {'excludedAirlineCodes': request.POST.get('ExcludeAirlines'), **kwargs}
+    if request.POST.get('Class'):
+        kwargs= {'travelClass': request.POST.get('Class'), **kwargs} 
 
     try: 
-        offerresponse = amadeus.shopping.flight_offers_search.get(
-        **kwargs)    
-        seatmap = {
-           "data": [
-               offerresponse.data[00]
-               ]
-            }
-        json_seatmap = json.dumps(seatmap)
-       
-        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
-        seatmapresult = seatmapresponse.body  
+        offerresponse = amadeus.shopping.flight_offers_search.get(**kwargs)    
+        
 
     except ResponseError as error: 
         print(error) 
         messages.add_message(request, messages.ERROR, error) 
         return render(request, 'app/offersearch.html', {}) 
+
+    request.session['offerdata'] = offerresponse.data
 
     #list with all the offers given to the formset
     offers = []
@@ -200,8 +196,7 @@ def availsearch(request):
     json_apidata = json.dumps(apidata)
 
     try: 
-        response = amadeus.shopping.availability.flight_availabilities.post(
-        json_apidata)
+        response = amadeus.shopping.availability.flight_availabilities.post(json_apidata)
         responsehtml = response.body;
         responsejson = json.loads(responsehtml)
              
@@ -250,8 +245,7 @@ def flightsearch(request):
                 'scheduledDepartureDate': request.POST.get('ScheduledDepartureDate')}
 
         try: 
-            statusresponse = amadeus.schedule.flights.get(
-            **kwargs) 
+            statusresponse = amadeus.schedule.flights.get(**kwargs) 
         
         except ResponseError as error: 
             print(error) 
@@ -289,8 +283,66 @@ def flightsearch(request):
 
 
 def seatmap(request):
+    try:
+        offerdata = request.session['offerdata']
+        offerid = int(request.GET['offerid'])
+        offerid = offerid-1
+        seatmap = {
+           "data": [
+               offerdata[offerid]
+               ]
+            }
+        json_seatmap = json.dumps(seatmap)
+        
+        seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
 
-        return render(request, "app/seatmap.html")
+    except ResponseError as error: 
+        print(error) 
+        messages.add_message(request, messages.ERROR, error) 
+        return render(request, "app/seatmap.html",{})  
+
+    seatmapresult = seatmapresponse.body  
+    seatmapdata = seatmapresponse.data
+    seatmap_toshow = {}
+    for count, seatmap in enumerate(seatmapdata):
+        countstr = str(count+1)        
+        check = request.POST.get(countstr) 
+        if check:
+            seatmap_toshow = seatmap   
+    rows = 0
+    columns = 0
+    firstclassrows = []
+    businessclassrows = []
+    reservedSeats = []
+    disbledSeats = []
+    if seatmap_toshow:
+        rows = seatmap_toshow['decks'][0]['deckConfiguration']['length']
+        columns = seatmap_toshow['decks'][0]['deckConfiguration']['width']-1
+        for seat in range(len(seatmap_toshow['decks'][0]['seats'])):
+            cabinclass = seatmap_toshow['decks'][0]['seats'][seat]['cabin']
+            blocked = seatmap_toshow['decks'][0]['seats'][seat]['travelerPricing'][0]['seatAvailabilityStatus']
+            if cabinclass =='FIRST':
+               classrow = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x'] 
+               firstclassrows.append(classrow)
+            if cabinclass =='BUSINESS':
+               classrow = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x'] 
+               businessclassrows.append(classrow)
+            if blocked == "BLOCKED":
+               x = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x']
+               y = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['y'] 
+               reservedSeats.append({'row': x, 'col': y})
+        for facility in range(len(seatmap_toshow['decks'][0]['facilities'])):
+            try:
+                x = seatmap_toshow['decks'][0]['facilities'][facility]['coordinates']['x']
+                y = seatmap_toshow['decks'][0]['facilities'][facility]['coordinates']['y']
+            except:
+                print("At least one Coordiante  was not available")
+            disbledSeats.append({'row': x, 'col': y})
+            
+
+    return render(request, "app/seatmap.html",{"seatmapdata":seatmapdata ,"rows": rows, "columns": columns, 'firstclassrows': firstclassrows, 'businessclassrows': businessclassrows, 'reservedSeats':reservedSeats,'disbledSeats':disbledSeats})    
+    
+    
  
 
 

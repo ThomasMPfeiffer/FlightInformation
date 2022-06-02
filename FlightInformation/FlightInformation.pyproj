@@ -59,6 +59,7 @@
     <Folder Include="FlightInformation\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app\static\app\content\seatmap.css" />
     <Content Include="app\templates\app\availsearch.html" />
     <Content Include="app\templates\app\flightsearch.html" />
     <Content Include="app\templates\app\offersearch.html" />
