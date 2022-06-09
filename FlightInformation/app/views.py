@@ -2,8 +2,6 @@
 Definition of views.
 """
 
-#wichtig!!! überall noch Abfrage einbauen, ob überhaupt Übergabeparameter bezüglich des API-Request in der Restuest message stehen!!
-
 from django.shortcuts import render
 from django.http import HttpRequest
 from django.template import RequestContext
@@ -13,28 +11,21 @@ from amadeus import Client, ResponseError
 from django.contrib import messages 
 from .forms import *
 import json
+from django.template.defaulttags import register
 
+#amadeus SDK Connection
 amadeus = Client(client_id='In8XtAGXlpWyURmQE3FQFSyGiUC3YSAL', 
                  client_secret='xwDB70qfB4AAnMrT', 
                  log_level='debug') 
 
+#Homescreen
 def home(request):
-    kwargs = {'originLocationCode': request.POST.get('Origin'), 
-              'destinationLocationCode': request.POST.get('Destination'), 
-              'departureDate': request.POST.get('Departuredate'), 
-              'returnDate': request.POST.get('Returndate')} 
-    try: 
-        purpose = amadeus.travel.predictions.trip_purpose.get( 
-            **kwargs).data['result'] 
-    except ResponseError as error: 
-        print(error) 
-        messages.add_message(request, messages.ERROR, error) 
-        return render(request, 'app/index.html', {}) 
-    return render(request, 'app/index.html', {'prediction': purpose})    
+    return render(request, 'app/index.html', {})    
 
 
 
 def offersearch(request): 
+    #Data needed for API-request
     kwargs = {'originLocationCode': request.POST.get('Origin'), 
             'destinationLocationCode': request.POST.get('Destination'), 
             'departureDate': request.POST.get('Departuredate'), 
@@ -50,9 +41,11 @@ def offersearch(request):
     if request.POST.get('Class'):
         kwargs= {'travelClass': request.POST.get('Class'), **kwargs} 
 
+#API-request
     try: 
         offerresponse = amadeus.shopping.flight_offers_search.get(**kwargs)    
-        
+        responsehtml = offerresponse.body;
+        responsejson = json.loads(responsehtml)
 
     except ResponseError as error: 
         print(error) 
@@ -61,59 +54,58 @@ def offersearch(request):
 
     request.session['offerdata'] = offerresponse.data
 
+ #data processing for frontend
     #list with all the offers given to the formset
     offers = []
- 
-    for offer in offerresponse.data:
+    if 'data' in responsejson:    
+        for offer in offerresponse.data:
 
-         #flight
-        segments = []
-        flights=len(offer['itineraries'][0]['segments'])
-        flightsret= len(offer['itineraries'][1]['segments'])
-        for segment in range(flights):             
-            departureat = offer['itineraries'][0]['segments'][segment]['departure']['at']
-            departureiatacode = offer['itineraries'][0]['segments'][segment]['departure']['iataCode']
-            arrivalat = offer['itineraries'][0]['segments'][segment]['arrival']['at']
-            arrivaliatacode = offer['itineraries'][0]['segments'][segment]['arrival']['iataCode']
-            numberOfStops = offer['itineraries'][0]['segments'][segment]['numberOfStops']
-            carriercode = offer['itineraries'][0]['segments'][segment]['carrierCode']
-            flightnumber = offer['itineraries'][0]['segments'][segment]['number']
+            #flight
+            segments = []
+            flights=len(offer['itineraries'][0]['segments'])
+            flightsret= len(offer['itineraries'][1]['segments'])
+            for segment in range(flights):             
+                departureat = offer['itineraries'][0]['segments'][segment]['departure']['at']
+                departureiatacode = offer['itineraries'][0]['segments'][segment]['departure']['iataCode']
+                arrivalat = offer['itineraries'][0]['segments'][segment]['arrival']['at']
+                arrivaliatacode = offer['itineraries'][0]['segments'][segment]['arrival']['iataCode']
+                numberOfStops = offer['itineraries'][0]['segments'][segment]['numberOfStops']
+                carriercode = offer['itineraries'][0]['segments'][segment]['carrierCode']
+                flightnumber = offer['itineraries'][0]['segments'][segment]['number']
 
-            segment = {'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber}
-            segments.append(segment)
+                segment = {'departure': departureat, 'departureiataCode': departureiatacode, 'arrivalat': arrivalat, 'arrivaliataCode': arrivaliatacode, 'stops': numberOfStops, 'carrierCode': carriercode, 'flightnumber': flightnumber}
+                segments.append(segment)
 
-        segmentsFormSetFlight = segments_FormSet(initial = segments)
+            segmentsFormSetFlight = segments_FormSet(initial = segments)
 
-        #returnflight
-        segmentsret = []
+            #returnflight
+            segmentsret = []
 
-        for segment in range(flightsret):     
-            departureatRet = offer['itineraries'][1]['segments'][segment]['departure']['at']
-            departureiatacodeRet = offer['itineraries'][1]['segments'][segment]['departure']['iataCode']
-            arrivalatRet = offer['itineraries'][1]['segments'][segment]['arrival']['at']
-            arrivaliatacodeRet = offer['itineraries'][1]['segments'][segment]['arrival']['iataCode']
-            numberOfStopsRet = offer['itineraries'][1]['segments'][segment]['numberOfStops']
-            carriercodeRet = offer['itineraries'][1]['segments'][segment]['carrierCode']
-            flightnumberRet = offer['itineraries'][1]['segments'][segment]['number']
+            for segment in range(flightsret):     
+                departureatRet = offer['itineraries'][1]['segments'][segment]['departure']['at']
+                departureiatacodeRet = offer['itineraries'][1]['segments'][segment]['departure']['iataCode']
+                arrivalatRet = offer['itineraries'][1]['segments'][segment]['arrival']['at']
+                arrivaliatacodeRet = offer['itineraries'][1]['segments'][segment]['arrival']['iataCode']
+                numberOfStopsRet = offer['itineraries'][1]['segments'][segment]['numberOfStops']
+                carriercodeRet = offer['itineraries'][1]['segments'][segment]['carrierCode']
+                flightnumberRet = offer['itineraries'][1]['segments'][segment]['number']
 
-            returnsegment = {'departure': departureatRet, 'departureiataCode': departureiatacodeRet, 'arrivalat': arrivalatRet, 'arrivaliataCode': arrivaliatacodeRet, 'stops': numberOfStopsRet, 'carrierCode': carriercodeRet, 'flightnumber': flightnumberRet}
-            segmentsret.append(returnsegment)
+                returnsegment = {'departure': departureatRet, 'departureiataCode': departureiatacodeRet, 'arrivalat': arrivalatRet, 'arrivaliataCode': arrivaliatacodeRet, 'stops': numberOfStopsRet, 'carrierCode': carriercodeRet, 'flightnumber': flightnumberRet}
+                segmentsret.append(returnsegment)
         
-        segmentsFormSetRet = segments_FormSet(initial = segmentsret)
+            segmentsFormSetRet = segments_FormSet(initial = segmentsret)
 
 
-        duration = offer['itineraries'][0]['duration']
-        durationRet= offer['itineraries'][1]['duration']
-        price = {'price':offer['price']['total'],'currency': offer['price']['currency']}
+            duration = offer['itineraries'][0]['duration']
+            durationRet= offer['itineraries'][1]['duration']
+            price = {'price':offer['price']['total'],'currency': offer['price']['currency']}
 
-        singleoffer = {'Duration':duration, 'Flight segments':segmentsFormSetFlight, 'Returnflight duration': durationRet, 'Returnflight segments': segmentsFormSetRet}
-        singleoffer.update(price)
+            singleoffer = {'Duration':duration, 'Flight segments':segmentsFormSetFlight, 'Returnflight duration': durationRet, 'Returnflight segments': segmentsFormSetRet}
+            singleoffer.update(price)
 
-        offers.append(singleoffer)
-        
-   # OffersearchResultFormSet = formset_factory(Offersearch_Offer, extra = 0)  
-     
-   # offerformset = OffersearchResultFormSet(initial = offers)
+            offers.append(singleoffer)
+        else:
+            offers.append("There are no offers")
 
     return render(request, "app/offersearch.html", {'offers': offers})
 
@@ -124,7 +116,6 @@ def offersearch(request):
 def availsearch(request):
 
     #dynamic json creation
-
     apidata= {}
     originDestinations = [{}]
     departureDateTime = {}
@@ -166,7 +157,6 @@ def availsearch(request):
         cabinRestrictions[0]['originDestinationIds']=[1]
         flightFilters['cabinRestrictions']=cabinRestrictions
 
-
     if request.POST.get('IncludedConnectionPoints'):
         includedConnectionPoints = request.POST.get('IncludedConnectionPoints').split(",")
         originDestinations[0]['includedConnectionPoints'] = includedConnectionPoints
@@ -192,7 +182,7 @@ def availsearch(request):
     searchCriteria['flightFilters']=flightFilters
     apidata['searchCriteria']= searchCriteria
 
-    
+#API-request    
     json_apidata = json.dumps(apidata)
 
     try: 
@@ -206,11 +196,11 @@ def availsearch(request):
         return render(request, 'app/availsearch.html', {})
     
 
+#data processing for frontend
     flights = []
     if 'data' in responsejson:       
 
-        
-        
+              
         flightslen = len(responsejson['data'])
         for flight in range(flightslen):
             flightstring = ""
@@ -235,7 +225,10 @@ def availsearch(request):
     return render(request, "app/availsearch.html", {"flights": flights})
 
 
+
+
 def flightsearch(request):
+    #get data for API-request
     flightnumber =  request.POST.get('Flightnumber')
     if flightnumber:
         carrierCode = flightnumber[:2]
@@ -244,45 +237,53 @@ def flightsearch(request):
                 'flightNumber': int(number), 
                 'scheduledDepartureDate': request.POST.get('ScheduledDepartureDate')}
 
+        #API-request
         try: 
             statusresponse = amadeus.schedule.flights.get(**kwargs) 
+            responsehtml = statusresponse.body;
+            responsejson = json.loads(responsehtml)
         
         except ResponseError as error: 
             print(error) 
             messages.add_message(request, messages.ERROR, error) 
             return render(request, 'app/flightsearch.html', {}) 
 
+        #data processing for frontend
         flights = []
-        for dataset in statusresponse.data:            
-            scheduledDepartureDate = dataset['scheduledDepartureDate']
-            carrierCode = dataset['flightDesignator']['carrierCode']
-            flightNumber = dataset['flightDesignator']['flightNumber']
+        if 'data' in responsejson:  
+            for dataset in statusresponse.data:            
+                scheduledDepartureDate = dataset['scheduledDepartureDate']
+                carrierCode = dataset['flightDesignator']['carrierCode']
+                flightNumber = dataset['flightDesignator']['flightNumber']
 
-            amountflightPoints = len(dataset['flightPoints'])
-            flightpoints = []
-            for flightpoint in range(amountflightPoints):
-                iataCode = dataset['flightPoints'][flightpoint]['iataCode']
-                if flightpoint == 0:
-                    timingValue = dataset['flightPoints'][flightpoint]['departure']['timings'][0]['value']  
-                if flightpoint == 1:
-                    timingValue = dataset['flightPoints'][flightpoint]['arrival']['timings'][0]['value']  
-                #timings ist eine Liste. Überprüfen, ob hier ggf mehrere Timings möglich sind und sind es immer zwei Flightpoints?? kann arrival und departure 0 und 1 sein?
+                amountflightPoints = len(dataset['flightPoints'])
+                flightpoints = []
+                for flightpoint in range(amountflightPoints):
+                    iataCode = dataset['flightPoints'][flightpoint]['iataCode']
+                    if flightpoint == 0:
+                        timingValue = dataset['flightPoints'][flightpoint]['departure']['timings'][0]['value']  
+                    if flightpoint == 1:
+                        timingValue = dataset['flightPoints'][flightpoint]['arrival']['timings'][0]['value']  
+                        
+                    singleflightpoint ={'iataCode':iataCode, 'timingValue':timingValue}
+                    flightpoints.append(singleflightpoint)
 
-                singleflightpoint ={'iataCode':iataCode, 'timingValue':timingValue}
-                flightpoints.append(singleflightpoint)
+                flightpointsFormSet = flightpoints_FormSet(initial = flightpoints)
+                flight = {'scheduledDepartureDate':scheduledDepartureDate, 'carrierCode':carrierCode, 'flightNumber':flightNumber, 'flightpoints':flightpointsFormSet}
+                flights.append(flight)
 
-            flightpointsFormSet = flightpoints_FormSet(initial = flightpoints)
-            flight = {'scheduledDepartureDate':scheduledDepartureDate, 'carrierCode':carrierCode, 'flightNumber':flightNumber, 'flightpoints':flightpointsFormSet}
-            flights.append(flight)
-
-        if len(flights)==0:
-           flights = "There are no flights available" 
+            if len(flights)==0:
+               flights = "There are no flights available" 
+        else:
+         flights.append("There are no Flights available")   
     else:
          return render(request, 'app/flightsearch.html', {}) 
     return render(request, "app/flightsearch.html", {"flights": flights})
 
 
 def seatmap(request):
+
+    #get data from session and create parameter for seatmap API-request
     try:
         offerdata = request.session['offerdata']
         offerid = int(request.GET['offerid'])
@@ -294,6 +295,7 @@ def seatmap(request):
             }
         json_seatmap = json.dumps(seatmap)
         
+        #API-request
         seatmapresponse = amadeus.shopping.seatmaps.post(seatmap)
 
     except ResponseError as error: 
@@ -301,6 +303,7 @@ def seatmap(request):
         messages.add_message(request, messages.ERROR, error) 
         return render(request, "app/seatmap.html",{})  
 
+    #which seatmap should be shown?
     seatmapresult = seatmapresponse.body  
     seatmapdata = seatmapresponse.data
     seatmap_toshow = {}
@@ -309,43 +312,84 @@ def seatmap(request):
         check = request.POST.get(countstr) 
         if check:
             seatmap_toshow = seatmap   
-    rows = 0
-    columns = 0
-    firstclassrows = []
-    businessclassrows = []
-    reservedSeats = []
-    disbledSeats = []
+
+
+#data processing for frontend
+    blockedseats=[]
+    width  = 0
+    seats = []
+    facilities = []
+    blockedseatsupper=[]
+    seatsupper = []
+    facilitiesupper = []
+    twodecks = False 
+
     if seatmap_toshow:
-        rows = seatmap_toshow['decks'][0]['deckConfiguration']['length']
-        columns = seatmap_toshow['decks'][0]['deckConfiguration']['width']-1
+
+        #lower deck
+        width = seatmap_toshow['decks'][0]['deckConfiguration']['width']*50
         for seat in range(len(seatmap_toshow['decks'][0]['seats'])):
             cabinclass = seatmap_toshow['decks'][0]['seats'][seat]['cabin']
-            blocked = seatmap_toshow['decks'][0]['seats'][seat]['travelerPricing'][0]['seatAvailabilityStatus']
-            if cabinclass =='FIRST':
-               classrow = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x'] 
-               firstclassrows.append(classrow)
-            if cabinclass =='BUSINESS':
-               classrow = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x'] 
-               businessclassrows.append(classrow)
+            blocked = seatmap_toshow['decks'][0]['seats'][seat]['travelerPricing'][0]['seatAvailabilityStatus']    
+                   
             if blocked == "BLOCKED":
-               x = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x']
-               y = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['y'] 
-               reservedSeats.append({'row': x, 'col': y})
+               x = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x']+1
+               y = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['y']+1
+               number = seatmap_toshow['decks'][0]['seats'][seat]['number']
+               seatcoords = {'row': x, 'col': y,  'number':number}
+               blockedseats.append(seatcoords)
+            else:
+               x = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['x']+1
+               y = seatmap_toshow['decks'][0]['seats'][seat]['coordinates']['y']+1
+               number = seatmap_toshow['decks'][0]['seats'][seat]['number']
+               seatcoords = {'row': x, 'col': y, 'number':number}
+               seats.append(seatcoords)
+
         for facility in range(len(seatmap_toshow['decks'][0]['facilities'])):
             try:
-                x = seatmap_toshow['decks'][0]['facilities'][facility]['coordinates']['x']
-                y = seatmap_toshow['decks'][0]['facilities'][facility]['coordinates']['y']
+                x = seatmap_toshow['decks'][0]['facilities'][facility]['coordinates']['x']+1
+                y = seatmap_toshow['decks'][0]['facilities'][facility]['coordinates']['y']+1
+                code = seatmap_toshow['decks'][0]['facilities'][facility]['code']
+                facilities.append({'row': x, 'col': y, 'code':code})
             except:
                 print("At least one Coordiante  was not available")
-            disbledSeats.append({'row': x, 'col': y})
-            
 
-    return render(request, "app/seatmap.html",{"seatmapdata":seatmapdata ,"rows": rows, "columns": columns, 'firstclassrows': firstclassrows, 'businessclassrows': businessclassrows, 'reservedSeats':reservedSeats,'disbledSeats':disbledSeats})    
+
+
+        try:
+            #upper deck
+            if seatmap_toshow['decks'][1]:
+                twodecks = True
+                for seat in range(len(seatmap_toshow['decks'][1]['seats'])):
+                    cabinclassupper = seatmap_toshow['decks'][1]['seats'][seat]['cabin']
+                    blockedupper = seatmap_toshow['decks'][1]['seats'][seat]['travelerPricing'][1]['seatAvailabilityStatus']    
+                            
+                    if blocked == "BLOCKED":
+                       x = seatmap_toshow['decks'][1]['seats'][seat]['coordinates']['x']+1
+                       y = seatmap_toshow['decks'][1]['seats'][seat]['coordinates']['y']+1
+                       number = seatmap_toshow['decks'][1]['seats'][seat]['number']
+                       seatcoords = {'row': x, 'col': y,  'number':number}
+                       blockedseatsupper.append(seatcoords)
+                    else:
+                       x = seatmap_toshow['decks'][1]['seats'][seat]['coordinates']['x']+1
+                       y = seatmap_toshow['decks'][1]['seats'][seat]['coordinates']['y']+1
+                       number = seatmap_toshow['decks'][1]['seats'][seat]['number']
+                       seatcoords = {'row': x, 'col': y, 'number':number}
+                       seatsupper.append(seatcoords)
+
+                for facility in range(len(seatmap_toshow['decks'][1]['facilities'])):
+                    try:
+                        x = seatmap_toshow['decks'][1]['facilities'][facility]['coordinates']['x']+1
+                        y = seatmap_toshow['decks'][1]['facilities'][facility]['coordinates']['y']+1
+                        code = seatmap_toshow['decks'][1]['facilities'][facility]['code']
+                        facilitiesupper.append({'row': x, 'col': y, 'code':code})
+                    except:
+                        print("At least one Coordiante  was not available")
+
+        except:
+            print("This plane has one floor")
+
+    return render(request, "app/seatmap.html",{'seatmapdata': seatmapdata, 'seats': seats, 'blockedseats':blockedseats, 'facilities':facilities, 'seatsupper': seatsupper, 'blockedseatsupper':blockedseatsupper, 'facilitiesupper':facilitiesupper, 'twodecks':twodecks, 'width':width})    
     
-    
- 
-
-
-
 
 

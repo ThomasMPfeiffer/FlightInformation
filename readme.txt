@@ -7,3 +7,5 @@ Aufsetzen:
 4) CMD Öffnen und zum ablageordner des Projekts wechseln. Den Unteronterordner "FlightInformation" öffnen
 5) Befehl "python manage.py runserver" aufrufen. Dies startet den Server (normalerweise auf Port 8000) ggf muss ein anderer Port zum starten verwendet werden.
 6) Browser öffnen und die Webseite unter localhost:8000 aufrufen
+
+Alternativ zu den Schritten 4)-6) kann die Webseite auch über Visual Studio gestartet werden.
