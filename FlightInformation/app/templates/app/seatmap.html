@@ -1,8 +1,10 @@
 {% extends "app/layout.html" %}
 {% block content %}
 <br />
+    {#Form to check which seatmap should be shown#}
     <h3>Which seatmaps should be shown? (Sorted chronological by departure time) </h3>
     Only one can be selected. Not every flight provides a Seatmap!
+<br />
     <form action="" method="POST" id="select seatmap">
         {% csrf_token %} 
         
@@ -12,6 +14,8 @@
         {% endfor %}
         <input type="Submit" name="Submit" value="Submit"/>
     </form>
+
+    {#Visalization of the plane containing the plane grid#}
     <div class="plane" >
       <div class="cockpit">
         <h1>Seatmap Display</h1>

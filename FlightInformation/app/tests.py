@@ -6,7 +6,6 @@ when you run "manage.py test".
 import django
 from django.test import TestCase
 
-# TODO: Configure your database in settings.py and sync before running tests.
 
 class ViewTest(TestCase):
     """Tests for the application views."""

@@ -13,10 +13,10 @@ from .forms import *
 import json
 from django.template.defaulttags import register
 
-#amadeus SDK Connection
+#amadeus SDK Connection put in your  API-Key an Secret here
 amadeus = Client(client_id='In8XtAGXlpWyURmQE3FQFSyGiUC3YSAL', 
                  client_secret='xwDB70qfB4AAnMrT', 
-                 log_level='debug') 
+                 log_level='silent') #Change this log level to 'debug' for further debug information while running
 
 #Homescreen
 def home(request):
@@ -57,7 +57,8 @@ def offersearch(request):
  #data processing for frontend
     #list with all the offers given to the formset
     offers = []
-    if 'data' in responsejson:    
+    empty = ''
+    if len(offerresponse.data)>0: 
         for offer in offerresponse.data:
 
             #flight
@@ -104,10 +105,10 @@ def offersearch(request):
             singleoffer.update(price)
 
             offers.append(singleoffer)
-        else:
-            offers.append("There are no offers")
+    else:
+        empty = 'There are no offers for this request'
 
-    return render(request, "app/offersearch.html", {'offers': offers})
+    return render(request, "app/offersearch.html", {'offers': offers,'empty':empty})
 
 
     
@@ -198,9 +199,8 @@ def availsearch(request):
 
 #data processing for frontend
     flights = []
-    if 'data' in responsejson:       
-
-              
+    empty = ''
+    if response.data:                    
         flightslen = len(responsejson['data'])
         for flight in range(flightslen):
             flightstring = ""
@@ -220,9 +220,9 @@ def availsearch(request):
                 segmentslist.append(flightstring)
             flights.append(segmentslist)
     else:
-        flights.append("There are no Flights available")
+        empty = 'There are no available seats for the requested parameters'
 
-    return render(request, "app/availsearch.html", {"flights": flights})
+    return render(request, "app/availsearch.html", {"flights": flights, "empty":empty})
 
 
 
@@ -250,7 +250,8 @@ def flightsearch(request):
 
         #data processing for frontend
         flights = []
-        if 'data' in responsejson:  
+        empty = ''
+        if len(statusresponse.data)>0:  
             for dataset in statusresponse.data:            
                 scheduledDepartureDate = dataset['scheduledDepartureDate']
                 carrierCode = dataset['flightDesignator']['carrierCode']
@@ -275,10 +276,10 @@ def flightsearch(request):
             if len(flights)==0:
                flights = "There are no flights available" 
         else:
-         flights.append("There are no Flights available")   
+         empty = 'There are no flights for the requested parameters'   
     else:
          return render(request, 'app/flightsearch.html', {}) 
-    return render(request, "app/flightsearch.html", {"flights": flights})
+    return render(request, "app/flightsearch.html", {"flights": flights, 'empty': empty})
 
 
 def seatmap(request):

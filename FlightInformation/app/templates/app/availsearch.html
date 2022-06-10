@@ -20,7 +20,7 @@
       </p> 
 
       <details>
-        <summary>Search Filter</summary> {#Nonstop noch einfügen mit max numbers of connections#}
+        <summary>Search Filter</summary> 
           <div style="float: left">
             Travel Class
             <p>                    
@@ -60,7 +60,7 @@
             not via
         </p>
         <p> 
-            <input type="number" name="MaxStops" id="maxStops"> 
+            <input type="number" min="0" name="MaxStops" id="maxStops"> 
              Max. Stops
           </p> 
       </details>
@@ -69,6 +69,7 @@
       <input type="Submit" name="Submit" value="Submit" />
    </form>
 
+{{empty}}
     {% for flight in flights %}
             <h4>{{forloop.counter}}.</h4>
             <table class="results">

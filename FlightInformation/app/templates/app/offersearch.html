@@ -23,7 +23,7 @@
               Return Date
           </p> 
           <p> 
-             <input type="number" name="Amount_adults" id="idAdultamount" required> 
+             <input type="number" min="0" name="Amount_adults" id="idAdultamount" required> 
               Pax
           </p> 
           <p> 
@@ -53,9 +53,10 @@
             </details>
         <br/>
         <input type="Submit" name="Submit" value="Submit"/>
-    </div>
+    </div
+<br />
+{{empty}}
    </form>
-  {# Frontend designer nutzen BSP: Storybook  #}
         {% for offer in offers %}
             <h4>Offernumber: {{forloop.counter}}</h4>
             <form action="seatmap?offerid={{forloop.counter}}" method="post">

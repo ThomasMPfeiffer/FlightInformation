@@ -9,3 +9,9 @@ Aufsetzen:
 6) Browser öffnen und die Webseite unter localhost:8000 aufrufen
 
 Alternativ zu den Schritten 4)-6) kann die Webseite auch über Visual Studio gestartet werden.
+
+Einrichten der eigenen Amadeus-API
+1) FlightInformation\app\views.py öffnen
+2) Zeile 17ff unter 'client_id' den API-Key eintragen; unter 'client_secret' das Secret eintragen
+
+Hinweis: Das Projekt kann nur aus Visual Studio gestartet werden, wenn in FlightInformation\FlightInformation\settings.py in Zeile 27 DEBUG = True ist
