@@ -15,3 +15,4 @@ Einrichten der eigenen Amadeus-API
 2) Zeile 17ff unter 'client_id' den API-Key eintragen; unter 'client_secret' das Secret eintragen
 
 Hinweis: Das Projekt kann nur aus Visual Studio gestartet werden, wenn in FlightInformation\FlightInformation\settings.py in Zeile 27 DEBUG = True ist
+         Aktuell ist in Zeile 31 nur der localhost als host erlaubt. Soll ein weiterer Host hinzugefügt werden, so kann das hier gemacht werden.
